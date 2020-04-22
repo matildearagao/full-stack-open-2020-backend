@@ -3,10 +3,10 @@ const app = express()
 const morgan = require('morgan')
 const cors = require('cors')
 
+app.use(express.static('build'))
 app.use(express.json())
 app.use(cors())
 app.use(morgan( ":method :url :status :res[content-length] - :response-time ms :content"))
-app.use(express.static('build'))
 
 
 morgan.token("content", req => {
