@@ -10,7 +10,6 @@ app.use(morgan( ":method :url :status :res[content-length] - :response-time ms :
 app.use(express.static('build'))
 
 
-
 morgan.token("content", req => {
     if (!req.body) return "";
     return JSON.stringify(req.body);
