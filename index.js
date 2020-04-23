@@ -5,6 +5,9 @@ const app = express()
 const morgan = require('morgan')
 const cors = require('cors')
 
+const Person = require('./models/person')
+
+
 app.use(express.static('build'))
 app.use(express.json())
 app.use(cors())
@@ -39,38 +42,40 @@ const info = `<p> Phonebook has info for ${persons.length} people</p>
                 <p>  ${new Date()} </p>
             `
 
-//get all resources
-app.get('/api/persons', (req, res) => {
-    res.json(persons)
-  })
-
 //new route
 app.get('/info', (req, res) => {
     res.send(info)
   })
 
+
+
+  //get all resources
+app.get('/api/persons', (req, res) => {
+  Person.find({}).then(people => {
+    res.json(people.map(person => person.toJSON()))
+  });
+})
+
   //single resource fetch
-  app.get('/api/persons/:id', (request, response) => {
-    const id = Number(request.params.id)
-    const person = persons.find(person => person.id === id)
-     if (person) {
-      response.json(person)
-    } else {
-      response.status(404).end()
-    }
+  app.get('/api/persons/:id', (req, res) => {
+    Person.findById(req.params.id).then(person => {
+      res.json(person.toJSON())
+    })
   })
 
 
 //delete resource
-app.delete('/api/persons/:id', (request, response) => {
-    const id = Number(request.params.id)
-    persons = persons.filter(person => person.id !== id)
+app.delete('/api/persons/:id', (req, res) => {
+  const id = req.params.id;
+  console.log(persons);
+  
+  persons = persons.filter((person) => person.id !== id);
 
-    response.status(204).end()
+  res.status(204).end()
 })
 
 //add resource
-const newId = Math.floor(Math.random() * 100)
+// const newId = Math.floor(Math.random() * 100)
 
 app.post('/api/persons', (request, response) => {
     const body = request.body
@@ -89,18 +94,18 @@ app.post('/api/persons', (request, response) => {
     })  
 }
 
-    const person = {
+    const person = new Person({
         name: body.name,
         number: body.number,
-        id: newId
-    }
+        // id: newId
+    })
 
-    persons = persons.concat(person)
-    response.json(person)
+    person.save().then(savedPerson => {
+      response.json(savedPerson.toJSON())
   })
+})
 
-
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT
 
 
 app.listen(PORT, () => {
