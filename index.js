@@ -7,16 +7,8 @@ const cors = require("cors");
 
 const Person = require("./models/person");
 
-app.use(express.static("build"));
-app.use(express.json());
-app.use(cors());
-app.use(
-  morgan(
-    ":method :url :status :res[content-length] - :response-time ms :content"
-  )
-);
-
-const errorHandler = (error, response, next) => {
+const PORT = process.env.PORT;
+const errorHandler = (error, response, request, next) => {
   if (error.name === "CastError") {
     return response.status(400).send({ error: "malformatted id" });
   }
@@ -31,10 +23,26 @@ const unknownEndpoint = (response) => {
   response.status(404).send({ error: "unknown endpoint" });
 };
 
+
 morgan.token("content", (req) => {
   if (!req.body) return "";
   return JSON.stringify(req.body);
 });
+
+
+app.use(express.static("build"));
+app.use(express.json());
+app.use(cors());
+app.use(
+  morgan(
+    ":method :url :status :res[content-length] - :response-time ms :content"
+  )
+);
+
+
+
+
+
 
 //new route
 app.get("/info", (req, res) => {
@@ -82,7 +90,7 @@ app.post("/api/persons", (request, response, next) => {
 
   const person = new Person({
     name: body.name,
-    number: body.number,
+    number: body.number
   });
 
   person
@@ -113,7 +121,6 @@ app.use(unknownEndpoint);
 
 app.use(errorHandler);
 
-const PORT = process.env.PORT;
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
