@@ -2,17 +2,20 @@ require("dotenv").config({ path: __dirname + "/.env" });
 
 const express = require("express");
 const app = express();
+const bodyParser = require("body-parser");
+
 const morgan = require("morgan");
 const cors = require("cors");
 
 const Person = require("./models/person");
 
-const PORT = process.env.PORT;
-const errorHandler = (error, response, request, next) => {
+const PORT = process.env.PORT || 3001;
+
+const errorHandler = (error, request, response, next) => { 
   if (error.name === "CastError") {
     return response.status(400).send({ error: "malformatted id" });
   }
-  if (error.name === "ValidationError") {
+  if (error.name === "ValidationError") {    
     return response.status(400).send({ error: error.message });
   }
 
@@ -31,7 +34,7 @@ morgan.token("content", (req) => {
 
 
 app.use(express.static("build"));
-app.use(express.json());
+app.use(bodyParser.json());
 app.use(cors());
 app.use(
   morgan(
